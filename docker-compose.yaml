@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend  # Path to your FastAPI backend directory
+    ports:
+      - "8000:80"  # Map the host port to the FastAPI container port
+    depends_on:
+      - postgres
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+
+  web:
+    build: ./web  # Path to your React frontend directory
+    ports:
+      - "8001:5173"  # Map the host port to the React container port
+    depends_on:
+      - fastapi
+
+  postgres:
+    image: postgres:latest
+    ports:
+      - "5432:5432"  # Map the host port to the PostgreSQL container port
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
