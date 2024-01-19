@@ -1,0 +1,18 @@
+.form__section {
+
+  &__verify-button {
+    // TODO
+    color: white !important;
+    background-color: red !important;
+    border-radius: 0;
+    border: 0;
+
+    &:hover {
+      background-color: red;
+      color: white;
+      border: 0;
+      cursor: default;
+    }
+  }
+
+}
