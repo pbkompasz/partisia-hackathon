@@ -1,49 +1,25 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { RouterProvider } from "react-router-dom";
+import { CookiesProvider } from "react-cookie";
+import { Provider } from "react-redux";
 
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
+import { router } from "./routes/router.jsx";
+import store from "./state/store.js";
 
-import App from './pages/common/App.jsx'
-import Tracking from './pages/common/Tracking.jsx';
-import Register from './pages/common/Register.jsx';
-import Error404 from './pages/common/Error404.jsx';
-import Invite from './pages/common/Invite.jsx';
-import './index.scss'
+import "@fontsource/roboto/300.css";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/700.css";
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <App />,
-  },
-  {
-    path: '/track',
-    element: <Tracking />
-  },
-  {
-    path: '/register',
-    element: <Register />
-  },
-  {
-    path: '/invite',
-    element: <Invite />,
-  },
-  {
-    path: '*',
-    element: <Error404 />,
-  }
-])
+import "./index.scss";
 
-
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <RouterProvider router={router} />
-  </React.StrictMode>,
-)
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <Provider store={store}>
+    <CookiesProvider defaultSetOptions={{ path: "/" }}>
+      <React.StrictMode>
+        <RouterProvider router={router} />
+      </React.StrictMode>
+    </CookiesProvider>
+  </Provider>
+);
