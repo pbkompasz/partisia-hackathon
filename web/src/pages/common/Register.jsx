@@ -1,8 +1,7 @@
 import { Fragment, useState } from "react";
 import Grid from "@mui/material/Grid";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import Stack from "@mui/material/Stack";
-import Switch from "@mui/material/Switch";
+import Divider from '@mui/material/Divider';
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Stepper from "@mui/material/Stepper";
@@ -14,9 +13,16 @@ import { styled } from "@mui/material/styles";
 import Paper from "@mui/material/Paper";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import CancelIcon from "@mui/icons-material/Cancel";
+import { useNavigate } from "react-router-dom";
 
 import CommonLayout from "../../components/layout/CommonLayout";
 import PersonalInformation from "../../components/reusable/PersonalInformation";
+import TokenDialog from "../../components/reusable/TokenDialog";
+import chain from "../../chain/authenticate";
 
 const steps = [
   "Provide or generate your private token",
@@ -30,7 +36,6 @@ const StepContainer = ({ children }) => {
     <Card
       variant="outlined"
       style={{
-        width: 1000,
         height: 500,
         minHeight: 500,
         maxWidth: "100%",
@@ -41,74 +46,95 @@ const StepContainer = ({ children }) => {
   );
 };
 
-const GenerateTokenStep = () => {
-  let [token, setToken] = useState("");
-  let [showTokenGenerator, setShowTokenGenerator] = useState(false);
-  let [generated, setGenerated] = useState(false);
+const GenerateTokenStep = ({ account, setAccount }) => {
+  let [token, setToken] = useState(account.token);
+  const [verifing, setVerifing] = useState(false);
   let [verified, setVerified] = useState(false);
+  const [showTokenModal, setShowTokenModal] = useState(false);
 
-  // TODO
-  const generateToken = () => {
-    setShowTokenGenerator(true);
-    setToken("asdfasfd412343214321k");
-    setGenerated(true);
+  const handleModalClose = (generatedToken) => {
+    setShowTokenModal(false);
+    verifyToken(generatedToken);
+    chain.validateToken(generatedToken);
+    setToken(generatedToken);
   };
 
-  // TODO
-  const verifyToken = () => {
+  const verifyToken = (token) => {
+    setVerifing(true);
+    chain.validateToken(token);
     setVerified(true);
+    setVerifing(false);
+    setAccount((prev) => {
+      console.log(prev);
+      prev.token = token;
+      console.log(prev);
+      return prev;
+    });
   };
 
   return (
     <StepContainer>
       <h1>Enter your token</h1>
       <Stack>
-        {/* TODO Refactor this and in invite to reusable/GenreateToken */}
-        <TextField
-          style={{ width: "100%" }}
-          disabled={generated}
-          id="token"
-          label="Partisia token"
-          value={token}
-          onChange={(event) => setToken(event.target.value)}
-        />
-        <Button onClick={verifyToken} disabled={generated || verified}>
-          Verify
-        </Button>
-        <Button onClick={generateToken} disabled={generated || verified}>
-          I don&apos;t have a token. Generate token!
-        </Button>
-        {/* TODO Maybe use accordion here */}
-        {showTokenGenerator ? (
-          <>
-            <FormControlLabel
-              control={<Switch defaultChecked />}
-              label="Store your private token in the browser"
-            />
-            <Typography>
-              ! This is your unique token. Do not share it with anyone. If you
-              lose it you will not be able to access your token unless the
-              administrator of your organization grants you access.
-            </Typography>
-          </>
-        ) : (
-          <></>
+        <Stack direction="row" gap={2}>
+          <TextField
+            style={{ width: "100%" }}
+            disabled={token}
+            id="token"
+            label="Partisia token"
+            value={token}
+            onChange={(event) => setToken(event.target.value)}
+          />
+          <Button
+            onClick={verifyToken}
+            disabled={verified}
+            endIcon={
+              verified ? (
+                <CheckCircleOutlineIcon color="success"></CheckCircleOutlineIcon>
+              ) : (
+                token && <CancelIcon color="warning"></CancelIcon>
+              )
+            }
+          >
+            Verify
+          </Button>
+        </Stack>
+
+        {verifing && (
+          <Backdrop
+            sx={{
+              color: "#fff",
+              zIndex: (theme) => theme.zIndex.drawer + 1,
+            }}
+            open={open}
+          >
+            <CircularProgress color="inherit" />
+          </Backdrop>
         )}
+        <Button disabled={verified} onClick={() => setShowTokenModal(true)}>
+          I don&apos;t have a token
+        </Button>
+        <TokenDialog open={showTokenModal} onClose={handleModalClose} />
       </Stack>
     </StepContainer>
   );
 };
-const PersonalDetailsStep = () => {
+const PersonalDetailsStep = ({ account, setAccount }) => {
   return (
     <StepContainer>
       <Grid container spacing={2}>
-        <PersonalInformation></PersonalInformation>
+        <PersonalInformation
+          account={account}
+          setAccount={setAccount}
+        ></PersonalInformation>
       </Grid>
     </StepContainer>
   );
 };
 
-const OrganizaitonDetailsStep = () => {
+const OrganizaitonDetailsStep = ({ account, setAccount }) => {
+  const [option, setOption] = useState("manufacturer");
+
   return (
     <StepContainer>
       <Grid
@@ -118,33 +144,67 @@ const OrganizaitonDetailsStep = () => {
         style={{ minHeight: "200px" }}
       >
         <Grid item xs={6}>
-          <Item onClick={() => {}}>Manufacturing</Item>
+          <Item onClick={() => setOption("manufacturer")}>
+            {option === "manufacturer" && (
+              <CheckCircleOutlineIcon></CheckCircleOutlineIcon>
+            )}
+            Manufacturing
+          </Item>
         </Grid>
         <Grid item xs={6}>
-          <Item>Logistics</Item>
+          <Item onClick={() => setOption("logistics")}>
+            {option === "logistics" && (
+              <CheckCircleOutlineIcon></CheckCircleOutlineIcon>
+            )}
+            Logistics
+          </Item>
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            value={account.companyName}
+            onChange={(e) =>
+              setAccount((prev) => {
+                prev.companyName = e.target.value;
+                return prev;
+              })
+            }
+          ></TextField>
         </Grid>
       </Grid>
     </StepContainer>
   );
 };
 
-const FinalStep = () => {
+const FinalStep = ({ account }) => {
   return (
     <StepContainer>
       <Typography>Verify that everything is correct</Typography>
+      <Stack alignItems="start">
+        <Typography fontSize={24} style={{textDecoration: "underline"}}>Block chain</Typography>
+        <Typography>Token: {account.token}</Typography>
+        <Divider/>
+        <Typography fontSize={24} style={{textDecoration: "underline"}}>Personal Information</Typography>
+        <Typography>First name: {account.firstName}</Typography>
+        <Typography>Last name: {account.lastName}</Typography>
+        <Typography>Email address: {account.email}</Typography>
+        <Typography fontSize={24} style={{textDecoration: "underline"}}>Company Information</Typography>
+        <Typography>Company name: {account.companyName}</Typography>
+      </Stack>
     </StepContainer>
   );
 };
 
-const getStep = (step) => {
+const getStep = (step, account, setAccount) => {
   if (step === 0) {
-    return <GenerateTokenStep />;
+    return <GenerateTokenStep account={account} setAccount={setAccount} />;
   } else if (step === 1) {
-    return <PersonalDetailsStep />;
+    return <PersonalDetailsStep account={account} setAccount={setAccount} />;
   } else if (step === 2) {
-    return <OrganizaitonDetailsStep />;
+    return (
+      <OrganizaitonDetailsStep account={account} setAccount={setAccount} />
+    );
   } else if (step === 3) {
-    return <FinalStep />;
+    return <FinalStep account={account} setAccount={setAccount} />;
   } else {
     return <Typography sx={{ mt: 2, mb: 1 }}>Step {step + 1}</Typography>;
   }
@@ -161,11 +221,26 @@ const Item = styled(Paper)(({ theme }) => ({
 }));
 
 const Register = () => {
+  const navigate = useNavigate();
+
   const [activeStep, setActiveStep] = useState(0);
+  const [account, setAccount] = useState({
+    token: "asd",
+    firstName: "peter",
+    lastName: "Kompasz",
+    email: "Kompasz@asd.com",
+    companyName: "My Company",
+  });
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
+
+  const handleFinish = () => {
+    // TODO
+    // createAccount(account);
+    navigate("/login");
+  }
 
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
@@ -177,7 +252,7 @@ const Register = () => {
 
   return (
     <CommonLayout>
-      <Box sx={{ width: "100%" }}>
+      <Box sx={{ maxWidth: "80%", padding: "8rem 2rem" }}>
         <Stepper activeStep={activeStep} style={{ marginBottom: "2rem" }}>
           {steps.map((label) => {
             const stepProps = {};
@@ -202,7 +277,7 @@ const Register = () => {
           </Fragment>
         ) : (
           <Fragment>
-            {getStep(activeStep)}
+            {getStep(activeStep, account, setAccount)}
             <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
               <Button
                 color="inherit"
@@ -214,9 +289,11 @@ const Register = () => {
               </Button>
               <Box sx={{ flex: "1 1 auto" }} />
               {/* TODO Check if allowed */}
-              <Button onClick={handleNext}>
-                {activeStep === steps.length - 1 ? "Finish" : "Next"}
-              </Button>
+              {activeStep === steps.length - 1 ? (
+                <Button onClick={handleFinish}>Finish</Button>
+              ) : (
+                <Button onClick={handleNext}>Next</Button>
+              )}
             </Box>
           </Fragment>
         )}
