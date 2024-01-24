@@ -1,5 +1,4 @@
 import { useState, Fragment } from "react";
-import CommonLayout from "../../components/layout/CommonLayout";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -16,14 +15,17 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
-import "./Tracking.scss";
 import { Grid } from "@mui/material";
 
-// TODO Track package
-// TODO Report damaged/mishandled package (specifically go through weight history to check if something is missing)
-// TODO Proof of delivery
+import "./Tracking.scss";
+import CommonLayout from "../../components/layout/CommonLayout";
+import {
+  trackPackage,
+  createReport,
+  createProofOfDelivery,
+} from "../../chain/tracking";
 
-const DetailedView = ({ authenticated, data = {} }) => {
+const DetailedView = ({ trackingNumber, authenticated, data = {} }) => {
   const [loading] = useState(false);
 
   return authenticated ? (
@@ -54,7 +56,12 @@ const DetailedView = ({ authenticated, data = {} }) => {
             >
               Status: {data.orderStatus}
             </Typography>
-            <Button className="">Generate a Proof of Delivery</Button>
+            <Button
+              className=""
+              onClick={() => createProofOfDelivery(trackingNumber)}
+            >
+              Generate a Proof of Delivery
+            </Button>
           </Stack>
           <Grid container spacing={4}>
             <Grid item xs={4}>
@@ -108,26 +115,38 @@ const DetailedView = ({ authenticated, data = {} }) => {
             divider={<Divider orientation="vertical" flexItem />}
           >
             <Grid item xs={6}>
-              <Button style={{ width: "100%" }}>
+              <Button
+                style={{ width: "100%" }}
+                onClick={() => trackPackage(trackingNumber)}
+              >
                 Didn&apos;t received you package?
               </Button>
             </Grid>
             <Grid item xs={6}>
-              <Button style={{ width: "100%" }}>I have a complaint</Button>
+              <Button
+                style={{ width: "100%" }}
+                onClick={() => createReport(trackingNumber, "complaint")}
+              >
+                I have a complaint
+              </Button>
             </Grid>
             <Grid item xs={6}>
-              <Button style={{ width: "100%" }}>My package is damaged</Button>
+              <Button
+                style={{ width: "100%" }}
+                onClick={() => createReport(trackingNumber, "damaged")}
+              >
+                My package is damaged
+              </Button>
             </Grid>
             <Grid item xs={6}>
-              <Button style={{ width: "100%" }}>
+              <Button
+                style={{ width: "100%" }}
+                onClick={() => createReport(trackingNumber, "mishandled")}
+              >
                 My package has been tampered with/is underweight/is the wrong
                 one
               </Button>
             </Grid>
-            {/* E.g. my package is damaged */}
-            {/* E.g. my package has been tampered with / is underweight / is the wrong one */}
-            {/* Here are pictures of your package, select the first one you think your package might have been damaged */}
-            {/* User uploads a photo, some operator/AI analyses it, and user can perform the checks */}
           </Grid>
         </CardContent>
       </Card>
@@ -234,60 +253,62 @@ const Tracking = () => {
 
   return (
     <CommonLayout>
-      <h1>Track & Trace</h1>
-      <Box component="form" className="form" noValidate autoComplete="off">
-        <div
-          className={`form__section ${
-            verified && authenticated ? "form__section--separate" : ""
-          }`}
-        >
-          <FormControl fullWidth sx={{ m: 1 }}>
-            <InputLabel htmlFor="track-number">
-              Enter your tracking number
-            </InputLabel>
-            <OutlinedInput
-              id="track-number"
-              type="text"
-              value={trackingNumber}
-              onChange={(event) => setTrackingNumber(event.target.value)}
-              endAdornment={
-                <InputAdornment position="end">
-                  <Button
-                    className="form__section__verify-button"
-                    onClick={verify}
-                  >
-                    Verify
-                  </Button>
-                </InputAdornment>
-              }
-              label="Enter your tracking number"
-            />
-          </FormControl>
-          <br />
+      <Box sx={{ maxWidth: "80%", padding: "2rem" }}>
+        <h1 style={{ paddingTop: "2rem" }}>Track & Trace</h1>
+        <Box component="form" className="form" noValidate autoComplete="off">
+          <div
+            className={`form__section ${
+              verified && authenticated ? "form__section--separate" : ""
+            }`}
+          >
+            <FormControl fullWidth sx={{ m: 1 }}>
+              <InputLabel htmlFor="track-number">
+                Enter your tracking number
+              </InputLabel>
+              <OutlinedInput
+                id="track-number"
+                type="text"
+                value={trackingNumber}
+                onChange={(event) => setTrackingNumber(event.target.value)}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <Button
+                      className="form__section__verify-button"
+                      onClick={verify}
+                    >
+                      Verify
+                    </Button>
+                  </InputAdornment>
+                }
+                label="Enter your tracking number"
+              />
+            </FormControl>
+            <br />
+            {verified ? (
+              <Stack>
+                <Typography
+                  sx={{ fontSize: 24 }}
+                  color="text.success"
+                  gutterBottom
+                >
+                  It is a valid tracking number!
+                </Typography>
+                <AuthenticationDialog setAuthentication={setAuthentication} />
+              </Stack>
+            ) : (
+              <></>
+            )}
+          </div>
           {verified ? (
-            <Stack>
-              <Typography
-                sx={{ fontSize: 24 }}
-                color="text.success"
-                gutterBottom
-              >
-                It is a valid tracking number!
-              </Typography>
-              <AuthenticationDialog setAuthentication={setAuthentication} />
-            </Stack>
+            <div className="form__section">
+              <DetailedView authenticated={authenticated} />{" "}
+            </div>
           ) : (
             <></>
           )}
-        </div>
-        {verified ? (
-          <div className="form__section">
-            <DetailedView authenticated={authenticated} />{" "}
-          </div>
-        ) : (
-          <></>
-        )}
+        </Box>
+        {/* v-show="validation" */}
       </Box>
-      {/* v-show="validation" */}
     </CommonLayout>
   );
 };
