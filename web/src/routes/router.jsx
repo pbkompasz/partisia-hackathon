@@ -8,6 +8,9 @@ import Register from "../pages/common/Register.jsx";
 import Error404 from "../pages/common/Error404.jsx";
 import Invite from "../pages/common/Invite.jsx";
 import Dashboard from "../pages/protected/Dashboard.jsx";
+import Layout from "../components/layout/Layout.jsx";
+import Settings from "../pages/protected/Settings.jsx";
+import Routes from "../components/logistics/Routes.jsx";
 
 export const router = createBrowserRouter([
   {
@@ -31,12 +34,26 @@ export const router = createBrowserRouter([
     element: <Invite />,
   },
   {
+    path: "/settings",
+    element: <Settings />,
+  },
+  {
     path: "/dashboard",
-    element: (
-      // <ProtectedRoute redirectTo="/">
-        <Dashboard />
-      // </ProtectedRoute>
-    ),
+    element: <Layout />,
+    children: [
+      {
+        path: "",
+        element: <Dashboard />,
+      },
+      {
+        path: "routes",
+        element: (
+          // <ProtectedRoute redirectTo="/" user={"logistics"}>
+            <Routes />
+          // </ProtectedRoute>
+        ),
+      },
+    ],
   },
   {
     path: "*",
