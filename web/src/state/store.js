@@ -1,8 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit'
-import counterReducer from './authentication'
+import authReducer from './authentication'
 
 export default configureStore({
   reducer: {
-    counter: counterReducer,
+    auth: authReducer,
   }
 })
