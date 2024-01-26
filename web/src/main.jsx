@@ -14,6 +14,9 @@ import "@fontsource/roboto/700.css";
 
 import "./index.scss";
 
+// TODO Setup colors and styles
+
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <Provider store={store}>
     <CookiesProvider defaultSetOptions={{ path: "/" }}>

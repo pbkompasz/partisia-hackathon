@@ -5,9 +5,9 @@ export const authSlice = createSlice({
   initialState: {
     username: "Driver",
     authenticated: true,
-    // role: "logistics-driver",
+    role: "logistics-driver",
     // role: "logistics-dispatcher",
-    role: "manufacturer",
+    // role: "manufacturer",
   },
   reducers: {
     logout: state => {

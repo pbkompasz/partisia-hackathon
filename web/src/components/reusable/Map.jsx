@@ -90,7 +90,7 @@ const Map = ({
   };
 
   return (
-    <MapContainer center={center} zoom={zoom} style={{ height, width }}>
+    <MapContainer center={center} zoom={zoom} style={{ height, width, cursor: "pointer" }}>
       <LocationFinderDummy />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
