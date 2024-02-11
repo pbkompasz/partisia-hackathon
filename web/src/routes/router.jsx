@@ -10,7 +10,10 @@ import Invite from "../pages/common/Invite.jsx";
 import Dashboard from "../pages/protected/Dashboard.jsx";
 import Layout from "../components/layout/Layout.jsx";
 import Settings from "../pages/protected/Settings.jsx";
+import Account from "../pages/protected/Account.jsx";
 import Routes from "../components/logistics/Routes.jsx";
+import Orders from "../components/manufacturer/Orders.jsx";
+import Reports from "../components/manufacturer/Reports.jsx";
 
 export const router = createBrowserRouter([
   {
@@ -35,7 +38,15 @@ export const router = createBrowserRouter([
   },
   {
     path: "/settings",
-    element: <Settings />,
+    element: (
+      <ProtectedRoute redirectTo="/">
+        <Settings />,
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/account",
+    element: <Account />,
   },
   {
     path: "/dashboard",
@@ -49,7 +60,23 @@ export const router = createBrowserRouter([
         path: "routes",
         element: (
           // <ProtectedRoute redirectTo="/" user={"logistics"}>
-            <Routes />
+          <Routes />
+          // </ProtectedRoute>
+        ),
+      },
+      {
+        path: "orders",
+        element: (
+          // <ProtectedRoute redirectTo="/" user={"logistics"}>
+          <Orders />
+          // </ProtectedRoute>
+        ),
+      },
+      {
+        path: "reports",
+        element: (
+          // <ProtectedRoute redirectTo="/" user={"logistics"}>
+          <Reports />
           // </ProtectedRoute>
         ),
       },
