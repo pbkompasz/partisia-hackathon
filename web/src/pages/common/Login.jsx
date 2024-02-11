@@ -1,4 +1,5 @@
 import { Card, Button, TextField, Stack } from "@mui/material";
+import { styled } from '@mui/material/styles';
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
 import { useCookies } from "react-cookie";
@@ -9,10 +10,24 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Divider from "@mui/material/Divider";
 
 import CommonLayout from "../../components/layout/CommonLayout";
+import { login } from "../../api/host/authentication";
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+const MainCard = styled(Card)(({ theme }) => ({
+  [theme.breakpoints.up('md')]: {
+    width: "70%",
+    height: "60%",
+    padding: "2rem",
+  },
+  [theme.breakpoints.down('md')]: {
+    width: "100%",
+    minHeight: "100vh",
+    padding: "1rem",
+  },
+}));
 
 const Login = () => {
   const [cookies, setCookie, removeCookie] = useCookies(["token"]);
@@ -21,6 +36,8 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const submitToken = async () => {
     try {
@@ -35,13 +52,20 @@ const Login = () => {
   };
 
   // Login to legacy server
-  const handleLogin = () => {};
+  const handleLogin = async () => {
+    const jwt = await login(email, password);
+    setCookie('jwt_token', jwt);
+    navigate('/dashboard');
+  };
 
   // Establish a connection with the blockchain
   const handleConnect = async () => {
-    connectMpcWalletClick();
+    const resp = await connectMpcWalletClick();
+    setToken(resp.address);
+    setCookie("token", resp.address);
     setLoading(true);
     await delay(2000);
+    navigate("/dashboard");
     setLoading(false);
   };
 
@@ -52,26 +76,21 @@ const Login = () => {
         style={{ height: "100vh" }}
         alignItems="center"
       >
-        <Card
-          style={{
-            width: "70%",
-            height: "60%",
-            padding: "2rem",
-          }}
-        >
-          <Stack gap={2}>
+        <MainCard>
+
+          <Stack gap={2} alignItems="center">
             <h1>Login</h1>
-            <Stack direction="row" gap={2}>
+            <Stack direction="row" justifyContent="center" alignItems="center" flexWrap="wrap" gap={2} style={{padding: '1rem', minWidth: "50%"}}>
               <TextField
-                style={{ width: "100%" }}
                 required
+                style={{minWidth: "70%"}}
                 id="email"
                 label="Enter your Partisia token"
                 disabled
                 value={token}
                 onChange={(event) => setToken(event.target.value)}
               />
-              <Button onClick={submitToken} variant="contained">
+              <Button onClick={submitToken} disabled variant="contained">
                 Submit
               </Button>
             </Stack>
@@ -87,18 +106,25 @@ const Login = () => {
                 id="outlined-basic"
                 label="Email address"
                 variant="outlined"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
               <TextField
                 id="filled-basic"
                 label="Password"
                 type="password"
                 variant="filled"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
-              <Button onClick={handleLogin}>Login</Button>
+              <Stack direction="row" gap={2}>
+                <Button onClick={handleLogin} variant="contained">Login</Button>
+                <Button href="/register">Register</Button>
+              </Stack>
             </Stack>
             <>{error}</>
           </Stack>
-        </Card>
+        </MainCard>
       </Stack>
       <Backdrop
         sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
