@@ -9,8 +9,6 @@ const isClient = (name: string) => {
   } 
 }
 
-
-
 const createRequest = async (clientName: string, itemName: string, quantity: string, destination: string, options: RequestOptions) => {
   if (!isClient) {
     throw new Error('Not on client list');

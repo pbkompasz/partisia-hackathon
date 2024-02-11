@@ -6,6 +6,10 @@ type RequestOptions = {
   takePhotos?: boolean
 }
 
+type PackageInfo = {
+  minimumWeight: number
+}
+
 export {
   RequestOptions,
 }
