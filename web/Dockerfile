@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm install --force
 
 # Copy the content of the local src directory to the working directory
 COPY . .
