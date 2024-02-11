@@ -1,7 +1,15 @@
-import { useState, forwardRef } from "react";
-import { Outlet } from "react-router-dom";
-import { styled, alpha } from "@mui/material/styles";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
+import { useState, forwardRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Outlet, useSearchParams } from "react-router-dom";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import RouteIcon from "@mui/icons-material/Route";
 import MailIcon from "@mui/icons-material/Mail";
 import List from "@mui/material/List";
 import Divider from "@mui/material/Divider";
@@ -13,12 +21,9 @@ import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
-import InputBase from "@mui/material/InputBase";
 import Badge from "@mui/material/Badge";
-import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
-import SearchIcon from "@mui/icons-material/Search";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import MoreIcon from "@mui/icons-material/MoreVert";
@@ -26,15 +31,15 @@ import Drawer from "@mui/material/Drawer";
 import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialIcon from "@mui/material/SpeedDialIcon";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
-import FileCopyIcon from "@mui/icons-material/FileCopyOutlined";
-import SaveIcon from "@mui/icons-material/Save";
-import PrintIcon from "@mui/icons-material/Print";
-import ShareIcon from "@mui/icons-material/Share";
+import AddIcon from "@mui/icons-material/Add";
+import AddchartIcon from "@mui/icons-material/Addchart";
 import Stack from "@mui/material/Stack";
 import { Link as RouterLink } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { enable } from "../../state/demo";
 
 import "./Layout.scss";
+import { changeRole } from "../../state/authentication";
 
 const Link = forwardRef(function Link(itemProps, ref) {
   return <RouterLink ref={ref} {...itemProps} role={undefined} />;
@@ -51,56 +56,29 @@ const ListItemLink = (props) => {
   );
 };
 
-const Search = styled("div")(({ theme }) => ({
-  position: "relative",
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  "&:hover": {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: "100%",
-  [theme.breakpoints.up("sm")]: {
-    marginLeft: theme.spacing(3),
-    width: "auto",
-  },
-}));
-
-const SearchIconWrapper = styled("div")(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: "100%",
-  position: "absolute",
-  pointerEvents: "none",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: "inherit",
-  "& .MuiInputBase-input": {
-    padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create("width"),
-    width: "100%",
-    [theme.breakpoints.up("md")]: {
-      width: "20ch",
-    },
-  },
-}));
-
 const Layout = ({ children }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
   const [drawer, setDrawer] = useState(false);
 
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("demo")) {
+      dispatch(enable());
+      // const role = searchParams.get("role") ?? "logistics-driver";
+      // dispatch(setRole(role));
+      // fetchDemoData(role);
+    }
+  }, []);
+
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
+  const dispatch = useDispatch();
   const role = useSelector((state) => state.auth.role);
   const username = useSelector((state) => state.auth.username);
+  const isDemo = useSelector((state) => state.demo.status);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -135,35 +113,46 @@ const Layout = ({ children }) => {
     if (type === "manufacturer") {
       items = [
         {
-          name: "Inbox",
+          name: "Dashboard",
           href: "/dashboard",
+          icon: <DashboardIcon />,
         },
         {
           name: "Orders",
           href: "/dashboard/orders",
+          icon: <ReceiptLongIcon />,
         },
         {
           name: "Reports",
           href: "/dashboard/reports",
+          icon: <BarChartIcon />,
         },
       ];
-    } else if (type === "logistics-dispatcher") {
+    } else if (type === "dispatcher") {
       items = [
         {
           name: "Map",
           href: "/dashboard",
+          icon: <DashboardIcon />,
         },
         {
           name: "Routes",
           href: "/dashboard/routes",
+          icon: <RouteIcon />,
         },
       ];
     } else {
       items = [
         {
-          name: "Map",
+          name: "Dashboard",
           href: "/dashboard",
+          icon: <DashboardIcon />,
         },
+        // {
+        //   name: "Routes",
+        //   href: "/dashboard/routes",
+        //   icon: <RouteIcon />,
+        // },
       ];
     }
     return (
@@ -179,7 +168,7 @@ const Layout = ({ children }) => {
               <ListItemLink
                 to={item.href}
                 primary={item.name}
-                icon={<InboxIcon />}
+                icon={item.icon}
               />
             </ListItem>
           ))}
@@ -190,7 +179,7 @@ const Layout = ({ children }) => {
             <ListItemLink
               to="/settings"
               primary="Settings"
-              icon={<InboxIcon />}
+              icon={<SettingsApplicationsIcon />}
             />
           </ListItem>
         </List>
@@ -198,11 +187,28 @@ const Layout = ({ children }) => {
     );
   };
 
-  const actions = [
-    { icon: <FileCopyIcon />, name: "Copy" },
-    { icon: <SaveIcon />, name: "Save" },
-    { icon: <PrintIcon />, name: "Print" },
-    { icon: <ShareIcon />, name: "Share" },
+  const navigate = useNavigate();
+
+  const addMarker = () => {
+    navigate("/dashboard?map_mode=edit");
+  };
+
+  const addItem = () => {};
+  const generateReport = () => {
+    navigate("/dashboard/reports?mode=create");
+  };
+
+  const driverActions = [
+    { icon: <AddIcon />, name: "Add new map marker", onclick: addMarker },
+  ];
+
+  const manufacturerActions = [
+    { icon: <AddIcon />, name: "Add new item", onclick: addItem },
+    {
+      icon: <AddchartIcon />,
+      name: "Generate Report",
+      onclick: generateReport,
+    },
   ];
 
   const menuId = "primary-search-account-menu";
@@ -222,8 +228,14 @@ const Layout = ({ children }) => {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+      <MenuItem
+        onClick={() => {
+          handleMenuClose();
+          navigate("/account");
+        }}
+      >
+        My account
+      </MenuItem>
     </Menu>
   );
 
@@ -255,10 +267,10 @@ const Layout = ({ children }) => {
       <MenuItem>
         <IconButton
           size="large"
-          aria-label="show 17 new notifications"
+          aria-label="show notifications"
           color="inherit"
         >
-          <Badge badgeContent={17} color="error">
+          <Badge badgeContent={0} color="error">
             <NotificationsIcon />
           </Badge>
         </IconButton>
@@ -300,20 +312,44 @@ const Layout = ({ children }) => {
               component="div"
               sx={{ display: { xs: "none", sm: "block" } }}
             >
-              {username}, {role}
+              {role}
             </Typography>
-            <Search>
-              <SearchIconWrapper>
-                <SearchIcon />
-              </SearchIconWrapper>
-              <StyledInputBase
-                placeholder="Search…"
-                inputProps={{ "aria-label": "search" }}
-              />
-            </Search>
             <Box sx={{ flexGrow: 1 }} />
+            {isDemo && (
+              <>
+                <p
+                  style={{
+                    background: "red",
+                    borderRadius: "5px",
+                    padding: "5px 10px",
+                  }}
+                >
+                  DEMO
+                </p>
+                <FormControl
+                  variant="standard"
+                  style={{ width: "10rem", margin: "0 1rem" }}
+                >
+                  <InputLabel id="demo-simple-select-label">Role</InputLabel>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={role}
+                    label="Age"
+                    onChange={(e) => {
+                      dispatch(changeRole({ role: e.target.value }));
+                      navigate("/dashboard");
+                    }}
+                  >
+                    <MenuItem value="dispatcher">Dispatcher</MenuItem>
+                    <MenuItem value="driver">Driver</MenuItem>
+                    <MenuItem value="manufacturer">Manufacturer</MenuItem>
+                  </Select>
+                </FormControl>
+              </>
+            )}
             <Box sx={{ display: { xs: "none", md: "flex" } }}>
-              <IconButton
+              {/* <IconButton
                 size="large"
                 aria-label="show 4 new mails"
                 color="inherit"
@@ -321,13 +357,13 @@ const Layout = ({ children }) => {
                 <Badge badgeContent={4} color="error">
                   <MailIcon />
                 </Badge>
-              </IconButton>
+              </IconButton> */}
               <IconButton
                 size="large"
-                aria-label="show 17 new notifications"
+                aria-label="show notifications"
                 color="inherit"
               >
-                <Badge badgeContent={17} color="error">
+                <Badge badgeContent={0} color="error">
                   <NotificationsIcon />
                 </Badge>
               </IconButton>
@@ -366,13 +402,16 @@ const Layout = ({ children }) => {
           sx={{ position: "absolute", bottom: 16, right: 16 }}
           icon={<SpeedDialIcon />}
         >
-          {actions.map((action) => (
-            <SpeedDialAction
-              key={action.name}
-              icon={action.icon}
-              tooltipTitle={action.name}
-            />
-          ))}
+          {(role === "driver" ? driverActions : manufacturerActions).map(
+            (action) => (
+              <SpeedDialAction
+                key={action.name}
+                icon={action.icon}
+                tooltipTitle={action.name}
+                onClick={action.onclick}
+              />
+            )
+          )}
         </SpeedDial>
         {renderMobileMenu}
         {renderMenu}
