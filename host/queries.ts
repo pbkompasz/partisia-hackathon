@@ -9,26 +9,6 @@ const pool = new pg.Pool({
   port: 5433,
 });
 
-// postgresql://postgres:1234@localhost:5433/postgres
-// CREATE DATABASE host;
-// \c host
-// CREATE TABLE users (
-//   ID SERIAL PRIMARY KEY,
-//   name VARCHAR(30),
-//   email VARCHAR(30)
-// );
-// CREATE TABLE requests (
-//   ID SERIAL PRIMARY KEY,
-//   client_name VARCHAR(30),
-//   item_name VARCHAR(30),
-//   quantity SMALLINT,
-//   destination VARCHAR(30),
-//   is_urgent BOOLEAN,
-//   logging_level SMALLINT,
-//   is_fragile BOOLEAN,
-//   take_photos BOOLEAN
-// );
-
 const getUserByName = (name: string) => {
   pool.query(
     "SELECT * FROM users WHERE name = $1",
@@ -40,6 +20,17 @@ const getUserByName = (name: string) => {
       return parseInt(results.rows[0].count);
     }
   );
+};
+
+const loginUser = async (email: string, password: string) => {
+  try {
+    await pool.query("SELECT * FROM users WHERE email = $1 AND password = $2", [
+      email,
+      password,
+    ]);
+  } catch (error) {
+    throw error;
+  }
 };
 
 const createRequest = async (
@@ -72,4 +63,27 @@ const createRequest = async (
   }
 };
 
-export { getUserByName, createRequest };
+const getReports = async () => {
+  try {
+    const results = await pool.query("SELECT * FROM reports");
+    console.log(results);
+    return results.rows;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getOrders = async (manufacturerId: string) => {
+  try {
+    const results = await pool.query(
+      "SELECT * FROM orders WHERE manufacturer_id = $1",
+      [manufacturerId]
+    );
+    console.log(results);
+    return results.rows;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export { getUserByName, createRequest, getReports, loginUser, getOrders };
