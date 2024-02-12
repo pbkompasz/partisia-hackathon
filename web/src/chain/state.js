@@ -17,9 +17,7 @@
  */
 
 import { ShardedClient } from "./client/sharded-client";
-// import { TransactionApi } from "./client/TransactionApi";
-// import { AverageSalaryApi } from "./contract/AverageSalaryApi";
-// import { updateContractState } from "./WalletIntegration";
+import { MapApi } from "./contract/map-api";
 
 export const CLIENT = new ShardedClient("https://node1.testnet.partisiablockchain.com", [
   "Shard0",
@@ -27,63 +25,49 @@ export const CLIENT = new ShardedClient("https://node1.testnet.partisiablockchai
   "Shard2",
 ]);
 
-// let contractAddress;
+let contractAddress;
 let currentAccount;
-// let contractAbi;
-// let averageApi;
-// let engineKeys;
+let contractAbi;
+let averageApi;
+let engineKeys;
 
 export const setAccount = (account) => {
   currentAccount = account;
-  // setAverageApi();
+  // if (role === 'driver') {
+    // setMapApi();
+  //   setDeliveryApi();
+  // } else if (role === 'dispatcher') {
+  //   setRoutesApi();
+  // } else if (role === 'manufacturer') {
+  //   setReportApi();
+  // }
 };
 
 export const resetAccount = () => {
   currentAccount = undefined;
 };
 
-// export const isConnected = () => {
-//   return currentAccount != null;
-// };
+export const isConnected = () => {
+  return currentAccount != null;
+};
 
-// export const setContractAbi = (abi) => {
-//   contractAbi = abi;
-//   setAverageApi();
-// };
+export const getContractAbi = () => {
+  return contractAbi;
+};
 
-// export const getContractAbi = () => {
-//   return contractAbi;
-// };
 
-// export const setAverageApi = () => {
-//   if (currentAccount != undefined && contractAbi != undefined && engineKeys !== undefined) {
-//     const transactionApi = new TransactionApi(currentAccount, updateContractState);
-//     averageApi = new AverageSalaryApi(
-//       transactionApi,
-//       currentAccount.address,
-//       contractAbi,
-//       engineKeys
-//     );
-//   }
-// };
+export const getAverageApi = () => {
+  return averageApi;
+};
 
-// export const getAverageApi = () => {
-//   return averageApi;
-// };
+export const getEngineKeys = () => {
+  return engineKeys;
+};
 
-// export const getEngineKeys = () => {
-//   return engineKeys;
-// };
+export const getContractAddress = () => {
+  return contractAddress;
+};
 
-// export const setEngineKeys = (keys) => {
-//   engineKeys = keys;
-//   setAverageApi();
-// };
-
-// export const getContractAddress = () => {
-//   return contractAddress;
-// };
-
-// export const setContractAddress = (address) => {
-//   contractAddress = address;
-// };
+export const setContractAddress = (address) => {
+  contractAddress = address;
+};
