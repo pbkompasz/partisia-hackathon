@@ -8,9 +8,11 @@ import { connectMpcWalletClick } from "../../chain/authenticate";
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from "@mui/material/Divider";
+import { useDispatch } from "react-redux";
 
 import CommonLayout from "../../components/layout/CommonLayout";
 import { login } from "../../api/host/authentication";
+import { updateAccountLogin, updateAccountHost } from "../../state/account";
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -38,6 +40,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const dispatch = useDispatch();
 
   const submitToken = async () => {
     try {
@@ -53,16 +56,21 @@ const Login = () => {
 
   // Login to legacy server
   const handleLogin = async () => {
-    const jwt = await login(email, password);
+    const { jwt, account } = await login(email, password);
+    console.log(jwt, account);
     setCookie('jwt_token', jwt);
+    setCookie('account', account);
+    dispatch(updateAccountHost(account));
     navigate('/dashboard');
   };
 
   // Establish a connection with the blockchain
   const handleConnect = async () => {
-    const resp = await connectMpcWalletClick();
-    setToken(resp.address);
-    setCookie("token", resp.address);
+    const address = await connectMpcWalletClick();
+    setToken(address);
+    console.log(address);
+    setCookie("token", address);
+    // dispatch(updateAccountLogin(resp));
     setLoading(true);
     await delay(2000);
     navigate("/dashboard");
