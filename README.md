@@ -3,15 +3,13 @@
 
 ## Description
 
-This project was submitted to the 2023 Partisia Hackathon.
-The proposed web application is a Secure Blockchain based Transportation Management System.
+This project was submitted to the 2023-2024 Partisia Hackathon.
+The proposed web application is a blockchain-based Supply-Chain Management System.
 
 For this hackathon the following functionalities have been implemented:
-- Fund Position, estimate future demand based on historic data using ZK contracts
-- Report, generate privacy preserving repots
-- Quarterly Revenue/Load Growth across industry/sector, optimize budgets using ZK contracts
-- Create logistics contracts (client → manufacturer, logistics bids on contract)
-- Consignment
+- Blockchain based delivery
+- Dyanmic route optimization using blockchain and MPC
+- Manufacturer statistics and report generation on sales data using ZK contracts
 - Proof of Delivery
 
 ### Why
@@ -22,19 +20,40 @@ Every actor will join if they get a positive ROI without sharing private data or
 
 ## Roles
 
-There are 4 distinct roles that operate on the Transportation Management System:
-- client i.e. end-customer
+There are 3 distinct roles that operate on the Transportation Management System:
 - logistics company: dispatcher + driver
 - manufacturer
-- governance e.g. city, emergency serviceses, etc.
+- client i.e. end-customer
+<!-- - governance e.g. city, emergency serviceses, etc. -->
+
+## How to Run (docker-compose coming soon)
+
+Run database
+```
+cd db/
+docker run --rm -P --publish 127.0.0.1:5433:5432 -e POSTGRES_PASSWORD="1234" --name pg -v ./init.sql:/docker-entrypoint-initdb.d/init.sql postgres:alpine
+```
+
+Run host
+```
+cd host/
+npm install
+npm run dev
+```
+
+Run web
+```
+cd web/
+npm install
+npm run dev
+```
 
 ## Directory structure
 
-- web: Contains the frontend for the web app and the landing pages
-- contracts: Contract logic
-- backend: Backend for the logistics company
-- data: Generate data
+- web: Contains the frontend for the web app, the landing page and the tracking page
+- contracts: Smart and ZK Contracts
+- host: Reader node and authentication
+- db: Database init script
 
-## Notes
+# Notes
 
-The logistics company has a backend to do business logic. The blockchain comms will happend from here.
