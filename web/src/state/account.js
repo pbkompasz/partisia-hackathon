@@ -18,8 +18,8 @@ export const accountSlice = createSlice({
   },
   reducers: {
     updateAccountChain: (state, action) => {
-      state.shardId = action.payload.account.shardId;
-      state.accountCoins = action.payload.account.accountCoins;
+      state.shardId = action.payload.shardId;
+      state.accountCoins = action.payload.accountCoins;
     },
     updateAccountHost: (state, action) => {
       console.log(action.payload);
