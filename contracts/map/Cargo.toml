@@ -1,5 +1,5 @@
 [package]
-name = "route"
+name = "map"
 readme = "README.md"
 version.workspace = true
 edition.workspace = true
