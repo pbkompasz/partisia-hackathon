@@ -6,8 +6,7 @@ const login =  async  (email, password, ) => {
       email,
       password,
     });
-    const { jwt } = resp.data;
-    return jwt;
+    return resp.data;
   } catch (error) {
     console.log(error.message);
     throw error;
