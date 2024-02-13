@@ -61,7 +61,8 @@ const Login = () => {
     setCookie('jwt_token', jwt);
     setCookie('account', account);
     dispatch(updateAccountHost(account));
-    navigate('/dashboard');
+    if (token)
+      navigate('/dashboard');
   };
 
   // Establish a connection with the blockchain
@@ -73,7 +74,8 @@ const Login = () => {
     // dispatch(updateAccountLogin(resp));
     setLoading(true);
     await delay(2000);
-    navigate("/dashboard");
+    if (cookies['jwt_token'])
+      navigate("/dashboard");
     setLoading(false);
   };
 
