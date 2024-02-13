@@ -3,27 +3,46 @@ import { createSlice } from '@reduxjs/toolkit'
 export const accountSlice = createSlice({
   name: 'account',
   initialState: {
-    username: '',
+    id: '',
     email: '',
     firstname: '',
     lastname: '',
     shardId: '',
     accountCoins: {},
+    contracts: [],
+    address: '',
+    // role: '',
+    // role: "driver",
+    // role: "dispatcher",
+    role: "manufacturer",
   },
   reducers: {
-    updateAccountChain: async (state, action) => {
+    updateAccountChain: (state, action) => {
       state.shardId = action.payload.account.shardId;
       state.accountCoins = action.payload.account.accountCoins;
     },
-    updateAccountHost: async (state, action) => {
-      state.username = action.payload.account.username;
-      state.email = action.payload.account.email;
-      state.firstname = action.payload.account.firstname;
-      state.lastname = action.payload.account.lastname;
+    updateAccountHost: (state, action) => {
+      console.log(action.payload);
+      state.id = action.payload.id;
+      state.email = action.payload.email;
+      state.firstname = action.payload.firstname;
+      state.lastname = action.payload.lastname;
+      state.contracts = action.payload.contracts;
+      state.role = action.payload.role;
+    },
+    updateAccountContracts: (state, action) => {
+      state.contracts = action.payload.contracts;
+    },
+    updateAccountLogin: (state, action) => {
+      state.address = action.payload.address;
+      state.signAndSendTransaction = action.payload.signAndSendTransaction;
+    },
+    changeRole: (state, action) => {
+      state.role = action.payload.role;
     },
   }
 })
 
-export const { updateAccountHost, updateAccountChain, } = accountSlice.actions;
+export const { updateAccountHost, updateAccountChain, updateAccountLogin, updateAccountContracts, } = accountSlice.actions;
 
 export default accountSlice.reducer;
