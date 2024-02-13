@@ -22,7 +22,7 @@ import { useNavigate } from "react-router-dom";
 import CommonLayout from "../../components/layout/CommonLayout";
 import PersonalInformation from "../../components/reusable/PersonalInformation";
 import TokenDialog from "../../components/reusable/TokenDialog";
-import chain from "../../chain/authenticate";
+// import chain from "../../chain/authenticate";
 
 const steps = [
   "Provide or generate your private token",
@@ -55,13 +55,13 @@ const GenerateTokenStep = ({ account, setAccount }) => {
   const handleModalClose = (generatedToken) => {
     setShowTokenModal(false);
     verifyToken(generatedToken);
-    chain.validateToken(generatedToken);
+    // chain.validateToken(generatedToken);
     setToken(generatedToken);
   };
 
   const verifyToken = (token) => {
     setVerifing(true);
-    chain.validateToken(token);
+    // chain.validateToken(token);
     setVerified(true);
     setVerifing(false);
     setAccount((prev) => {
@@ -252,6 +252,7 @@ const Register = () => {
 
   return (
     <CommonLayout>
+      <h1>Register</h1>
       <Box sx={{ maxWidth: "80%", padding: "8rem 2rem" }}>
         <Stepper activeStep={activeStep} style={{ marginBottom: "2rem" }}>
           {steps.map((label) => {
