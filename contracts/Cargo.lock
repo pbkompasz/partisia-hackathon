@@ -105,6 +105,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "delivery"
+version = "1.204.0"
+dependencies = [
+ "create_type_spec_derive",
+ "pbc_contract_codegen",
+ "pbc_contract_common",
+ "pbc_lib",
+ "pbc_traits",
+ "pbc_zk",
+ "read_write_rpc_derive",
+ "read_write_state_derive",
+]
+
+[[package]]
 name = "derive_commons"
 version = "16.40.0"
 source = "git+https://git@gitlab.com/partisiablockchain/language/contract-sdk.git?tag=v.16.40.0#6058c61701d9ae694b47bc5c2ad89fd064e63733"
@@ -188,6 +202,20 @@ name = "log"
 version = "0.4.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5e6163cb8c49088c2c36f57875e58ccd8c87c7427f7fbd50ea6710b2f3f2e8f"
+
+[[package]]
+name = "map"
+version = "1.204.0"
+dependencies = [
+ "chrono",
+ "create_type_spec_derive",
+ "pbc_contract_codegen",
+ "pbc_contract_common",
+ "pbc_lib",
+ "pbc_traits",
+ "read_write_rpc_derive",
+ "read_write_state_derive",
+]
 
 [[package]]
 name = "num-traits"
@@ -344,20 +372,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "route"
-version = "1.204.0"
-dependencies = [
- "chrono",
- "create_type_spec_derive",
- "pbc_contract_codegen",
- "pbc_contract_common",
- "pbc_lib",
- "pbc_traits",
- "read_write_rpc_derive",
- "read_write_state_derive",
 ]
 
 [[package]]
@@ -545,6 +559,20 @@ name = "windows_x86_64_msvc"
 version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dff9641d1cd4be8d1a070daf9e3773c5f67e78b4d9d42263020c057706765c04"
+
+[[package]]
+name = "zk-bidding"
+version = "1.204.0"
+dependencies = [
+ "create_type_spec_derive",
+ "pbc_contract_codegen",
+ "pbc_contract_common",
+ "pbc_lib",
+ "pbc_traits",
+ "pbc_zk",
+ "read_write_rpc_derive",
+ "read_write_state_derive",
+]
 
 [[package]]
 name = "zk-report"

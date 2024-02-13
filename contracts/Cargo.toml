@@ -4,7 +4,8 @@ resolver = "2"
 members = [
     "zk-report",
     "map",
-    # "transport",
+    "zk-bidding",
+    "delivery",
 ]
 
 [workspace.package]
