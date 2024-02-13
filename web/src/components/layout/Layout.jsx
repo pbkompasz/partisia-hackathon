@@ -76,8 +76,9 @@ const Layout = ({ children }) => {
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
   const dispatch = useDispatch();
-  const role = useSelector((state) => state.auth.role);
-  const username = useSelector((state) => state.auth.username);
+  const role = useSelector((state) => state.account.role);
+  const firstname = useSelector((state) => state.account.firstname);
+  const lastname = useSelector((state) => state.account.lastname);
   const isDemo = useSelector((state) => state.demo.status);
 
   const handleProfileMenuOpen = (event) => {
@@ -109,6 +110,7 @@ const Layout = ({ children }) => {
   };
 
   const list = (type) => {
+    console.log(type)
     let items = [];
     if (type === "manufacturer") {
       items = [
@@ -193,7 +195,6 @@ const Layout = ({ children }) => {
     navigate("/dashboard?map_mode=edit");
   };
 
-  const addItem = () => {};
   const generateReport = () => {
     navigate("/dashboard/reports?mode=create");
   };
@@ -203,7 +204,6 @@ const Layout = ({ children }) => {
   ];
 
   const manufacturerActions = [
-    { icon: <AddIcon />, name: "Add new item", onclick: addItem },
     {
       icon: <AddchartIcon />,
       name: "Generate Report",
@@ -312,7 +312,7 @@ const Layout = ({ children }) => {
               component="div"
               sx={{ display: { xs: "none", sm: "block" } }}
             >
-              {role}
+              {firstname} {lastname}
             </Typography>
             <Box sx={{ flexGrow: 1 }} />
             {isDemo && (
