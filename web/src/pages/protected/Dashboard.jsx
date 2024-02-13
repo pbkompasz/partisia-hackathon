@@ -24,7 +24,7 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { BarChart } from "@mui/x-charts/BarChart";
 import Typography from "@mui/material/Typography";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -36,49 +36,115 @@ import Divider from "@mui/material/Divider";
 import { PieChart } from "@mui/x-charts/PieChart";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
-import { useLocation } from "react-router-dom";
+import { useLocation, } from "react-router-dom";
+import { useCookies } from "react-cookie";
 
-// TODO Frontend
-// Driver add marker
-// Actions demo
-// Routes page
-
+import { updateContractState } from "../../chain/wallet-integration";
 import Map from "../../components/reusable/Map";
+import { sign } from "../../chain/contract/map-api";
+import { setContractState as setContractStateMap } from "../../state/map-contract";
+import { setContractState as setContractStateDelivery } from "../../state/delivery-contract";
+import { completeAction } from "../../chain/contract/delivery-api";
 
 const DriverDashboard = () => {
-  const [actions] = useState([
-    {
-      id: 1,
-      name: "Final drop-off",
-      takePhotos: true,
-      loggingLevel: 1,
-      isFragile: true,
-      description: "Drop off final destination",
-      address:
-        "e6429a8b424fa8a4d91ff5746af787f9985d8aafa18a8d7d8fa8c9c050461bfc",
-    },
-    {
-      id: 2,
-    },
-  ]);
-  const [currentActionId] = useState(1);
-  const [expanded, setExpanded] = useState(currentActionId);
+  const contracts = useSelector((state) => state.account.contracts);
+  const mapContract = useSelector((state) => state.mapContract);
+  const deliveryContract = useSelector((state) => state.deliveryContract);
+  const dispatch = useDispatch();
+  const [cookies] = useCookies(["token", "account"]);
+
+  useEffect(() => {
+    console.log(contracts);
+    contracts.map((contract) => {
+      console.log(contract);
+      updateContractState(contract.name, contract.address).then(
+        (contractState) => {
+          console.log(contractState);
+          const setContractStateFN =
+            contract.name === "map"
+              ? setContractStateMap
+              : setContractStateDelivery;
+          dispatch(
+            setContractStateFN({
+              ...contractState,
+            })
+          );
+          if (contract.name === "map") {
+            setMarkers(
+              contractState.events
+                .map((event) => {
+                  if (!event.coordX.includes("asd"))
+                    return {
+                      location: [event.coordX, event.coordY],
+                      id: 1,
+                      name: event.description,
+                    };
+                })
+                .filter((x) => !!x)
+            );
+          }
+        }
+      );
+    });
+  }, []);
 
   const hour = new Date().getHours();
 
-  const handleChange = (panel) => (event, newExpanded) => {
-    setExpanded(newExpanded ? panel : false);
-  };
   const theme = useTheme();
   const mdMatches = useMediaQuery(theme.breakpoints.down("md"));
+  const [markers, setMarkers] = useState([]);
+  const [weight, setWeight] = useState(0);
+  const [damaged, setDamaged] = useState(false);
+  const [photoHash, setPhotoHash] = useState(0);
 
   const search = useLocation().search;
-  // TODO to add markers
   const mapMode = new URLSearchParams(search).get("map_mode");
 
-  const [mapContractAddress] = useState(
-    "020a0771d73fdd491fecfdf77f73badfaf5d8c46e0"
-  );
+  const handleClick = (latlng) => {
+    console.log(latlng);
+    if (mapMode === "edit") {
+      sign(contracts[0].address, cookies.token, {
+        coordX: String(latlng.lat),
+        coordY: String(latlng.lng),
+        description: "Marker",
+        eventType: "avoid",
+        createDateUtcMillis: Date.now(),
+        duration: 30 * 60 * 1000,
+      });
+    }
+    updateContractState(contracts[0].name, contracts[0].address).then(
+      (contractState) => {
+        console.log(contractState);
+        dispatch(
+          setContractStateMap({
+            ...contractState,
+          })
+        );
+
+        setMarkers(
+          contractState.events
+            .map((event) => {
+              if (!event.coordX.includes("asd"))
+                return {
+                  location: [event.coordX, event.coordY],
+                  id: 1,
+                  name: event.description,
+                };
+            })
+            .filter((x) => !!x)
+        );
+      }
+    );
+  };
+
+  const handleComplete = () => {
+    console.log(weight, damaged, photoHash);
+    completeAction(contracts[1].address, cookies.token, {
+      weight,
+      pictureHash: photoHash,
+      isDamaged: damaged,
+    });
+  };
 
   return (
     <Grid container>
@@ -92,19 +158,24 @@ const DriverDashboard = () => {
             }}
           >
             <Link
-              href={`https://browser.testnet.partisiablockchain.com/contracts/${mapContractAddress}`}
+              href={`https://browser.testnet.partisiablockchain.com/contracts/${contracts[0].address}`}
               target="_blank"
             >
-              {mapContractAddress}
+              {contracts[0].address}
             </Link>
           </div>
           Current map contract:
         </Stack>
-        <Map height="45vh" width="100%" mode={mapMode}></Map>
+        <Map
+          height="45vh"
+          width="100%"
+          onClick={handleClick}
+          markers={markers}
+        ></Map>
       </Grid>
       <Grid item xs={12} md={4} style={{ padding: "0 2rem" }}>
         <Stack direction="row" pb={1} gap={1}>
-          Transport contract:
+          Delivery contract:
           <div
             style={{
               maxWidth: "200px",
@@ -113,19 +184,33 @@ const DriverDashboard = () => {
             }}
           >
             <Link
-              href={`https://browser.testnet.partisiablockchain.com/contracts/${mapContractAddress}`}
+              href={`https://browser.testnet.partisiablockchain.com/contracts/${contracts[1].address}`}
               target="_blank"
             >
-              {mapContractAddress}
+              {contracts[1].address}
             </Link>
           </div>
         </Stack>
-        {actions.map((action) => (
+        {deliveryContract.currentAction <= deliveryContract.actions.length ? (
+          <p>
+            Number of actions: {deliveryContract.actions.length}, current
+            action: {deliveryContract.currentAction}
+          </p>
+        ) : (
+          <p
+            style={{
+              padding: "6px 1rem",
+              background: "green",
+              borderRadius: "5px",
+            }}
+          >
+            Completed
+          </p>
+        )}
+        {deliveryContract.actions.map((action, index) => (
           <Accordion
-            expanded={expanded === action.id}
-            onChange={handleChange(action.id)}
-            defaultExpanded={action.id === currentActionId}
-            key={action.id}
+            expanded={index === deliveryContract.currentAction}
+            key={action.name}
           >
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
@@ -146,15 +231,15 @@ const DriverDashboard = () => {
                       textOverflow: "ellipsis",
                     }}
                   >
-                    <Link
+                    {/* <Link
                       href={`https://browser.testnet.partisiablockchain.com/transactions/${action.address}`}
                       target="_blank"
                     >
                       {action.address}
-                    </Link>
+                    </Link> */}
                   </div>
                 </Stack>
-                {action.id === currentActionId && (
+                {index === deliveryContract.currentAction && (
                   <div
                     style={{
                       background: "red",
@@ -172,32 +257,44 @@ const DriverDashboard = () => {
             <AccordionDetails>
               {action.description}
               <Stack gap={1} style={{ margin: "1rem 0" }}>
-                {action.loggingLevel === 1 && (
+                {deliveryContract.loggingLevel === 1 && (
                   <Stack direction="row">
                     <TextField
                       id="outlined-basic"
                       label="Weight"
                       variant="outlined"
+                      value={weight}
+                      onChange={(e) => setWeight(e.target.value)}
                     />
                   </Stack>
                 )}
-                {action.isFragile && (
+                {deliveryContract.isFragile && (
                   <Stack direction="row">
                     <FormControlLabel
-                      control={<Switch />}
+                      control={
+                        <Switch
+                          value={damaged}
+                          onChange={(e) => setDamaged(e.target.value)}
+                        />
+                      }
                       label="Is it damaged"
                     />
                   </Stack>
                 )}
-                {action.takePhotos && (
+                {deliveryContract.takePhotos && (
                   <Stack direction="row">
-                    <Button variant="outlined">Upload photo</Button>
+                    <Button
+                      variant="outlined"
+                      onClick={() => setPhotoHash("random_hash")}
+                    >
+                      Upload photo
+                    </Button>
                   </Stack>
                 )}
               </Stack>
             </AccordionDetails>
             <AccordionActions style={{ padding: "0.5rem 1rem" }}>
-              <Button>Completed</Button>
+              <Button onClick={handleComplete}>Completed</Button>
             </AccordionActions>
           </Accordion>
         ))}
@@ -231,11 +328,35 @@ const DriverDashboard = () => {
         </Box>
       </Grid>
       <Grid item md={4} xs={12} style={{ paddingTop: "1rem", height: "300px" }}>
-        <Card style={{ height: "100%" }}>
+        <Card style={{ height: "100%", overflow: "scroll" }}>
           <Typography fontSize={24} style={{ textDecoration: "underline" }}>
             News and Notes
           </Typography>
-          <p>Nothing here</p>
+          {mapContract.events?.length ? (
+            mapContract.events.map((event) =>
+              event.coordX.includes("asd") ? (
+                <></>
+              ) : (
+                event.eventType === "avoid" && (
+                  <div style={{ padding: "1rem", textAlign: "left" }}>
+                    <p>
+                      <span style={{ color: "red" }}>Avoid</span> :{" "}
+                      {event.coordX} : {event.coordX}
+                    </p>
+                    <p>
+                      <span style={{ textDecoration: "underline" }}>
+                        Event description:
+                      </span>{" "}
+                      {event.description}
+                    </p>
+                    <Divider></Divider>
+                  </div>
+                )
+              )
+            )
+          ) : (
+            <p>Nothing here</p>
+          )}
         </Card>
       </Grid>
     </Grid>
@@ -367,7 +488,7 @@ const DispatcherDashboard = () => {
             }}
           >
             {temporaryMarkers.map((marker) => (
-              <Box key={marker.id}>
+              <Box key={marker.location}>
                 <TextField
                   value={marker.name}
                   onChange={(event) =>
@@ -402,6 +523,15 @@ const DispatcherDashboard = () => {
 };
 const ManufacturerDashboard = () => {
   const rows = [];
+
+  const contracts = useSelector((state) => state.account.contracts);
+  useEffect(() => {
+    contracts.map((contract) => {
+      console.log(contract);
+      // TODO
+      // updateContractState("map", "02992bf7605d2138e3e917d763ea551ea95642b3c8");
+    });
+  });
 
   const [option, setOption] = useState("indiv");
   const [stockPerformanceReportIndiv] = useState([
@@ -485,23 +615,38 @@ const ManufacturerDashboard = () => {
 
       <Grid item xs={6} container>
         <Grid item xs={12} alignItems="start">
-          <ToggleButtonGroup
-            color="primary"
-            value={option}
-            exclusive
-            onChange={handleChange}
-            aria-label="Platform"
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
           >
-            <ToggleButton value="indiv">Individual</ToggleButton>
-            <ToggleButton value="coll">Collective</ToggleButton>
-          </ToggleButtonGroup>
+            <ToggleButtonGroup
+              color="primary"
+              value={option}
+              exclusive
+              onChange={handleChange}
+              aria-label="Platform"
+            >
+              <ToggleButton value="indiv">Individual</ToggleButton>
+              <ToggleButton value="coll">Collective</ToggleButton>
+            </ToggleButtonGroup>
+            <div>
+              Open contract in the &nbsp;
+              <Link
+                target="_blank"
+                href={`https://browser.testnet.partisiablockchain.com/contracts/${contracts[0]?.address}`}
+              >
+                browser
+              </Link>
+            </div>
+          </Stack>
         </Grid>
         <Grid item xs={6}>
           <Typography
             fontSize={24}
             style={{ textDecoration: "underline", paddingTop: "2rem" }}
           >
-            Current Sales Performance
+            2023/Q4 Sales Performance
           </Typography>
           <PieChart
             series={[
@@ -521,7 +666,7 @@ const ManufacturerDashboard = () => {
             fontSize={24}
             style={{ textDecoration: "underline", paddingTop: "2rem" }}
           >
-            Financial Report
+            2023/Q4 Financial Report
           </Typography>
           <PieChart
             series={[
@@ -542,7 +687,7 @@ const ManufacturerDashboard = () => {
 };
 
 const Dashboard = () => {
-  const role = useSelector((state) => state.auth.role);
+  const role = useSelector((state) => state.account.role);
 
   return (
     <div style={{ padding: "2rem" }}>
