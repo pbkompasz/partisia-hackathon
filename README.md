@@ -31,7 +31,7 @@ There are 3 distinct roles that operate on the Transportation Management System:
 Run database
 ```
 cd db/
-docker run --rm -P --publish 127.0.0.1:5433:5432 -e POSTGRES_PASSWORD="1234" --name pg -v ./init.sql:/docker-entrypoint-initdb.d/init.sql postgres:alpine
+docker run --rm -P --publish 127.0.0.1:5433:5432 -e POSTGRES_PASSWORD="1234" --name pg -v "/$(pwd)/init.sql:/docker-entrypoint-initdb.d/init.sql" postgres:alpine
 ```
 
 Run host
