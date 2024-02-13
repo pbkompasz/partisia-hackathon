@@ -6,104 +6,163 @@ use pbc_zk::*;
 /// If a value outside the given range is inputted, it will not be counted.
 #[derive(Clone, SecretBinary, CreateTypeSpec)]
 pub struct EntryPoint {
-    /// the age group to input. The following values can be inputted:
-    /// 1 = age 0-19,
-    /// 2 = age 20-39,
-    /// 3 = age 40-59,
-    /// 4 = age 60+
-    pub age_choice: Sbi8,
-    /// the gender to input. The following values can be inputted:
-    /// 1 = Male,
-    /// 2 = Female,
-    /// 3 = Other
-    pub gender_choice: Sbi8,
-    /// the color to input. The following values can be inputted:
-    /// 1 = Red,
-    /// 2 = Blue,
-    /// 3 = Green,
-    /// 4 = Yellow
-    pub color_choice: Sbi8,
+    pub revenue: Sbi32,
+    pub costs: Sbi32,
+    // revenue year prior
+    pub revenue_before: Sbi32,
+    pub inventory_start: Sbi32,
+    pub inventory_end: Sbi32,
+    pub number_of_violations: Sbi8,
+    pub penalty_costs: Sbi32,
 }
 
-/// Output data types.
+#[derive(Clone, SecretBinary, CreateTypeSpec)]
+pub struct SalesEntryPoint {
+    pub revenue: Sbi32,
+    pub costs: Sbi32,
+    // revenue year prior
+    pub revenue_before: Sbi32,
+}
+
 #[derive(Clone, PartialEq)]
-pub struct StatisticsOutput {
-    pub age_counts: AgeCounts,
-    pub gender_counts: GenderCounts,
-    pub color_counts: ColorCounts,
+pub struct StatisticsResult {
+    pub sales_report: SalesReport,
+    // pub inventory_report: InventoryReport,
+    // pub financial_report: FinancialReport,
+    // pub forecasting_report: ForecastingReport,
+    // pub compliance_report: ComplianceReport,
+    // pub production_report: ProductionReport,
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct AgeCounts {
-    pub age0to19: Sbi32,
-    pub age20to39: Sbi32,
-    pub age40to59: Sbi32,
-    pub age60plus: Sbi32,
+pub struct SalesReport {
+    pub revenue: Sbi32,
+    pub gross_margin: Sbi32,
+    pub growth_rate: Sbi32,
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct GenderCounts {
-    pub male: Sbi32,
-    pub female: Sbi32,
-    pub other: Sbi32,
+pub struct InventoryReport {
+    pub turnover_ratio: Sbi32,
+    pub holding_costs: Sbi32,
+    pub stock_out_rate: Sbi32,
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct ColorCounts {
-    pub red: Sbi32,
-    pub blue: Sbi32,
-    pub green: Sbi32,
-    pub yellow: Sbi32,
+pub struct FinancialReport {
+    pub profit_margin: Sbi32,
+    pub roi: Sbi32,
+    pub cash_flow_margin: Sbi32,
 }
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct ForecastingReport {
+    pub accuracy: Sbi32,
+    pub bias: Sbi32,
+    pub variance: Sbi32,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct ComplianceReport {
+    pub regulatory_rate: Sbi32,
+    pub number_of_violations: Sbi32,
+    pub penalty_costs: Sbi32,
+}
+
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct ProductionReport {
+    pub production_efficiency: Sbi32,
+    pub downtime: Sbi32,
+    pub scrap_rate: Sbi32,
+}
+
 
 #[allow(clippy::needless_range_loop, dead_code)]
-#[zk_compute(shortname = 0x40)]
-pub fn compute_statistics() -> StatisticsOutput {
+#[zk_compute(shortname = 0x41)]
+pub fn compute_sales_report() -> SalesReport {
     // Initialize counts
-    let mut age_count = [Sbi32::from(0); 4];
-    let mut gender_count = [Sbi32::from(0); 3];
-    let mut color_count = [Sbi32::from(0); 4];
+    let mut total_revenue: Sbi32 = Sbi32::from(0);
+    let mut total_costs: Sbi32 = Sbi32::from(0);
+    // This comes from other contract
+    let mut total_revenue_before: Sbi32 = Sbi32::from(0);
+    let mut count: Sbi32 = Sbi32::from(0);
 
     // Analyze input data
     for variable_id in secret_variable_ids() {
         let input = load_sbi::<EntryPoint>(variable_id);
-
-        for idx in 0usize..4usize {
-            if input.age_choice == Sbi8::from((idx + 1usize) as i8) {
-                age_count[idx] = age_count[idx] + Sbi32::from(1)
-            }
-        }
-
-        for idx in 0usize..3usize {
-            if input.gender_choice == Sbi8::from((idx + 1usize) as i8) {
-                gender_count[idx] = gender_count[idx] + Sbi32::from(1)
-            }
-        }
-
-        for idx in 0usize..4usize {
-            if input.color_choice == Sbi8::from((idx + 1usize) as i8) {
-                color_count[idx] = color_count[idx] + Sbi32::from(1)
-            }
-        }
+        total_revenue = total_revenue + input.revenue;
+        total_costs = total_costs + input.costs;
+        total_revenue_before = total_revenue_before + input.revenue_before;
+        count = count + Sbi32::from(1); 
     }
 
-    StatisticsOutput {
-        age_counts: AgeCounts {
-            age0to19: age_count[0],
-            age20to39: age_count[1],
-            age40to59: age_count[2],
-            age60plus: age_count[3],
-        },
-        gender_counts: GenderCounts {
-            male: gender_count[0],
-            female: gender_count[1],
-            other: gender_count[2],
-        },
-        color_counts: ColorCounts {
-            red: color_count[0],
-            blue: color_count[1],
-            green: color_count[2],
-            yellow: color_count[3],
-        },
+    let growth_rate: Sbi32 = total_revenue - total_revenue_before;
+    let gross_margin: Sbi32 = total_revenue - total_costs;
+
+    SalesReport {
+        revenue: total_revenue,
+        gross_margin: gross_margin,
+        growth_rate: growth_rate,
+    }
+}
+
+#[allow(clippy::needless_range_loop, dead_code)]
+#[zk_compute(shortname = 0x40)]
+pub fn compute_statistics() -> StatisticsResult {
+    // Initialize counts
+    let mut total_revenue: Sbi32 = Sbi32::from(0);
+    let mut total_costs: Sbi32 = Sbi32::from(0);
+    // This comes from other contract
+    let mut total_revenue_before: Sbi32 = Sbi32::from(0);
+    let mut count: Sbi32 = Sbi32::from(0);
+
+    // Analyze input data
+    for variable_id in secret_variable_ids() {
+        let input = load_sbi::<EntryPoint>(variable_id);
+        total_revenue = total_revenue + input.revenue;
+        total_costs = total_costs + input.costs;
+        total_revenue_before = total_revenue_before + input.revenue_before;
+        count = count + Sbi32::from(1); 
+    }
+
+    let growth_rate: Sbi32 = total_revenue - total_revenue_before;
+    let gross_margin: Sbi32 = total_revenue - total_costs;
+
+    StatisticsResult {
+        sales_report: SalesReport {
+            revenue: total_revenue,
+            gross_margin: gross_margin,
+            growth_rate: growth_rate,
+        }
+    }
+}
+
+#[allow(clippy::needless_range_loop, dead_code)]
+#[zk_compute(shortname = 0x40)]
+pub fn compute_item_statistics() -> ItemResult {
+    // Initialize counts
+    let mut total_revenue: Sbi32 = Sbi32::from(0);
+    let mut total_costs: Sbi32 = Sbi32::from(0);
+    // This comes from other contract
+    let mut total_revenue_before: Sbi32 = Sbi32::from(0);
+    let mut count: Sbi32 = Sbi32::from(0);
+
+    // Analyze input data
+    for variable_id in secret_variable_ids() {
+        let input = load_sbi::<EntryPoint>(variable_id);
+        total_revenue = total_revenue + input.revenue;
+        total_costs = total_costs + input.costs;
+        total_revenue_before = total_revenue_before + input.revenue_before;
+        count = count + Sbi32::from(1); 
+    }
+
+    let growth_rate: Sbi32 = total_revenue - total_revenue_before;
+    let gross_margin: Sbi32 = total_revenue - total_costs;
+
+    ItemResult {
+        revenue: total_revenue,
+        gross_margin: gross_margin,
+        growth_rate: growth_rate,
     }
 }

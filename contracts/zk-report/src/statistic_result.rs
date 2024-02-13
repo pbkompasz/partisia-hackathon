@@ -6,30 +6,60 @@ use read_write_state_derive::ReadWriteState;
 
 #[derive(ReadWriteState, CreateTypeSpec, Clone)]
 pub struct StatisticsResult {
-    pub age_counts: AgeCounts,
-    pub gender_counts: GenderCounts,
-    pub color_counts: ColorCounts,
+    pub sales_report: SalesReport,
+    pub inventory_report: InventoryReport,
+    pub financial_report: FinancialReport,
+    pub forecasting_report: ForecastingReport,
+    pub compliance_report: ComplianceReport,
+    pub production_report: ProductionReport,
 }
 
 #[derive(ReadWriteState, CreateTypeSpec, Clone)]
-pub struct AgeCounts {
-    pub age0to19: i32,
-    pub age20to39: i32,
-    pub age40to59: i32,
-    pub age60plus: i32,
+pub struct ItemResult {
+    pub orders: i32,
+    pub sold: i32,
+    pub in_production: i32,
 }
 
 #[derive(ReadWriteState, CreateTypeSpec, Clone)]
-pub struct GenderCounts {
-    pub male: i32,
-    pub female: i32,
-    pub other: i32,
+pub struct SalesReport {
+    pub revenue: i32,
+    pub gross_margin: i32,
+    pub growth_rate: i32,
 }
 
 #[derive(ReadWriteState, CreateTypeSpec, Clone)]
-pub struct ColorCounts {
-    pub red: i32,
-    pub blue: i32,
-    pub green: i32,
-    pub yellow: i32,
+pub struct InventoryReport {
+    pub turnover_ratio: i32,
+    pub holding_costs: i32,
+    pub stock_out_rate: i32,
+}
+
+#[derive(ReadWriteState, CreateTypeSpec, Clone)]
+pub struct FinancialReport {
+    pub profit_margin: i32,
+    pub roi: i32,
+    pub cash_flow_margin: i32,
+}
+
+#[derive(ReadWriteState, CreateTypeSpec, Clone)]
+pub struct ForecastingReport {
+    pub accuracy: i32,
+    pub bias: i32,
+    pub variance: i32,
+}
+
+#[derive(ReadWriteState, CreateTypeSpec, Clone)]
+pub struct ComplianceReport {
+    pub regulatory_rate: i32,
+    pub number_of_violations: i32,
+    pub penalty_costs: i32,
+}
+
+
+#[derive(ReadWriteState, CreateTypeSpec, Clone)]
+pub struct ProductionReport {
+    pub production_efficiency: i32,
+    pub downtime: i32,
+    pub scrap_rate: i32,
 }
