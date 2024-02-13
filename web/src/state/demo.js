@@ -22,3 +22,7 @@ export const demoSlice = createSlice({
 export const { enable, disable, } = demoSlice.actions;
 
 export default demoSlice.reducer;
+
+// TODO
+// When clicking demo login in with demo account
+// When switching users relog them in
