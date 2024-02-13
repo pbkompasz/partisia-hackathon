@@ -1,26 +1,33 @@
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
-import { updateAccountChain, updateAccountHost } from "../state/account";
+import { updateAccountChain, updateAccountHost, updateAccountContracts, } from "../state/account";
 import { useEffect } from "react";
-import { getAccount } from "../api/chain";
-import { getAccount as getAccountHost } from "../api/host/account";
+import { getAccount as getAccountChain } from "../api/chain";
+import { getAccount as getAccountHost, getContracts, } from "../api/host/account";
 
 const ProtectedRoute = ({ redirectTo, children }) => {
   const dispatch = useDispatch();
-  const [cookies] = useCookies(["token"]);
+  const [cookies] = useCookies(["token", 'account']);
   const navigate = useNavigate();
+  const id = useSelector((state) => state.account.id);
 
   useEffect(() => {
+    console.log(cookies.token);
     const fetchData = async () => {
       try {
-        let resp = await getAccount(cookies.token);
-        dispatch(updateAccountChain(resp));
-        resp = await getAccountHost();
-        dispatch(updateAccountHost(resp));
+        const [accountChain, accountHost, contracts] = await Promise.all([
+          await getAccountChain(cookies.token),
+          await getAccountHost(cookies.account.id ?? id),
+          await getContracts(cookies.account.id ?? id),
+        ]);
+        console.log(contracts);
+        dispatch(updateAccountChain(accountChain));
+        dispatch(updateAccountHost(accountHost));
+        dispatch(updateAccountContracts(contracts));
       } catch (error) {
         console.log(error);
-        navigate('/login');
+        navigate("/login");
       }
     };
 
