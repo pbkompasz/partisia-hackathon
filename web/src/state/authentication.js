@@ -4,10 +4,7 @@ export const authSlice = createSlice({
   name: 'auth',
   initialState: {
     username: "Driver",
-    authenticated: true,
-    role: "logistics-driver",
-    // role: "logistics-dispatcher",
-    // role: "manufacturer",
+    authenticated: false,
   },
   reducers: {
     logout: state => {
@@ -20,6 +17,6 @@ export const authSlice = createSlice({
 })
 
 // Action creators are generated for each case reducer function
-export const { login, logout } = authSlice.actions;
+export const { login, logout, changeRole, } = authSlice.actions;
 
 export default authSlice.reducer;
