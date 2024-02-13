@@ -12,7 +12,7 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 
 import CommonLayout from "../../components/layout/CommonLayout";
 import PersonalInformation from "../../components/reusable/PersonalInformation";
-import chain from "../../chain/authenticate";
+// import chain from "../../chain/authenticate";
 import TokenDialog from "../../components/reusable/TokenDialog";
 
 const Invite = (props) => {
@@ -24,7 +24,7 @@ const Invite = (props) => {
   const handleModalClose = (generatedToken) => {
     setVerifing(true);
     setShowTokenModal(false);
-    chain.validateToken(generatedToken);
+    // chain.validateToken(generatedToken);
     setVerifing(false);
     setVerified(true);
     setAccount((prev) => {
